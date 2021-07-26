@@ -16,4 +16,19 @@
 # AVRCP
 #
 
+
 device.internal = 1
+
+def AddImage(info, dir, basename, dest, printInfo=True):
+  data = info.input_zip.read(dir + "/" + basename)
+  common.ZipWriteStr(info.output_zip, basename, data)
+  if printInfo:
+   info.script.Print("Patching {} image unconditionally...".format(dest.split('/')[-1]))
+   info.script.AppendExtra('package_extract_file("%s", "%s");' % (basename, dest))
+
+def FullOTA_InstallBegin(info):
+  AddImage(info, "RADIO", "super_dummy.img", "/tmp/super_dummy.img", False);
+  info.script.AppendExtra('package_extract_file("install/bin/flash_super_dummy.sh", "/tmp/flash_super_dummy.sh");')
+  info.script.AppendExtra('set_metadata("/tmp/flash_super_dummy.sh", "uid", 0, "gid", 0, "mode", 0755);')
+  info.script.AppendExtra('run_program("/tmp/flash_super_dummy.sh");')
+  return
